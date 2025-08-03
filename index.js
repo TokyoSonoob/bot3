@@ -1,7 +1,7 @@
 const { Client } = require('discord.js-selfbot-v13');
 
 const client = new Client();
-
+require("./server");
 // ห้องเป้าหมายพร้อมน้ำหนักความน่าจะเป็น
 const weightedChannelIds = [
   { id: '1080187563073081454', weight: 40 },
