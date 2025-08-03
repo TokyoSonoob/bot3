@@ -76,7 +76,7 @@ client.on('ready', async () => {
     } catch (error) {
       console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
     }
-  }, 90000);
+  }, 60000);
 });
 
 client.on('messageCreate', async (message) => {
