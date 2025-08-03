@@ -8,7 +8,7 @@ const listenChannelIds = [
   '1084807182098370731',
   '1377816772354244689'
 ];
-
+require("./server");
 const forwardChannelId = '1401622760496562269'; // ห้องเป้าหมาย
 const logChannelId = '1401627069393272912'; // ห้อง log แจ้งว่าบอทส่งไปที่ไหน
 const keywords = ['<@&1082277102830764152>'];
