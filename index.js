@@ -2,26 +2,60 @@ const { Client } = require('discord.js-selfbot-v13');
 
 const client = new Client();
 
-const listenChannelIds = [
-  '1080187563073081454',
-  '1086201661929832500',
-  '1084807182098370731',
-  '1377816772354244689'
+// ห้องเป้าหมายพร้อมน้ำหนักความน่าจะเป็น
+const weightedChannelIds = [
+  { id: '1080187563073081454', weight: 40 },
+  { id: '1086201661929832500', weight: 20 },
+  { id: '1084807182098370731', weight: 10 },
+  { id: '1377816772354244689', weight: 30 },
 ];
-require("./server");
-const forwardChannelId = '1401622760496562269'; // ห้องเป้าหมาย
-const logChannelId = '1401627069393272912'; // ห้อง log แจ้งว่าบอทส่งไปที่ไหน
-const keywords = ['<@&1082277102830764152>'];
-const mentionMessage = '<@&1082277102830764152> หา ญ นัด';
 
-let currentSendIndex = 0;
+// ห้องสำหรับ log และส่งต่อข้อความ
+const forwardChannelId = '1401622760496562269';
+const logChannelId = '1401627069393272912';
+
+// คำที่ใช้ตรวจสอบในข้อความ
+const keywords = ['<@&1082277102830764152>'];
+
+// ข้อความสุ่มที่ใช้ mention
+const mentionMessages = [
+  '<@&1082277102830764152> หา ญ นอนกอด',
+  '<@&1082277102830764152> หา ญ นอนกอดคืนนี้',
+  '<@&1082277102830764152> หานัดชิวๆ ขอ ญ',
+  '<@&1082277102830764152> หาเพื่อนเที่ยว ขอ ญ',
+  '<@&1082277102830764152> หา One Night',
+  '<@&1082277102830764152> ใครเหงาทักมา ขอ ญ',
+  '<@&1082277102830764152> หา ญ',
+  '<@&1082277102830764152> ปะทิว เดม',
+  '<@&1082277102830764152> ท่าแซะ เดม',
+];
+
+// ฟังก์ชันสุ่มข้อความ
+function getRandomMentionMessage() {
+  const index = Math.floor(Math.random() * mentionMessages.length);
+  return mentionMessages[index];
+}
+
+// ฟังก์ชันสุ่มห้องตามน้ำหนัก
+function getRandomChannelId() {
+  const totalWeight = weightedChannelIds.reduce((sum, ch) => sum + ch.weight, 0);
+  const random = Math.random() * totalWeight;
+  let cumulative = 0;
+
+  for (const channel of weightedChannelIds) {
+    cumulative += channel.weight;
+    if (random < cumulative) {
+      return channel.id;
+    }
+  }
+}
 
 client.on('ready', async () => {
   console.log(`✅ เข้าระบบในชื่อ ${client.user.tag}`);
 
-  // เริ่มวนส่งข้อความ
+  // ส่งข้อความสุ่มทุก 2 นาที
   setInterval(async () => {
-    const targetChannelId = listenChannelIds[currentSendIndex];
+    const targetChannelId = getRandomChannelId();
 
     try {
       const channel = await client.channels.fetch(targetChannelId);
@@ -32,7 +66,8 @@ client.on('ready', async () => {
         return;
       }
 
-      await channel.send(mentionMessage);
+      const messageToSend = getRandomMentionMessage();
+      await channel.send(messageToSend);
       console.log(`✅ ส่งข้อความไปยังห้อง ${targetChannelId} เรียบร้อย`);
 
       if (logChannel) {
@@ -41,13 +76,11 @@ client.on('ready', async () => {
     } catch (error) {
       console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
     }
-
-    currentSendIndex = (currentSendIndex + 1) % listenChannelIds.length;
-  }, 60000);
+  }, 120000);
 });
 
 client.on('messageCreate', async (message) => {
-  if (!listenChannelIds.includes(message.channel.id)) return;
+  if (!weightedChannelIds.some(ch => ch.id === message.channel.id)) return;
   if (message.author.id === client.user.id) return;
 
   const content = message.content.toLowerCase();
