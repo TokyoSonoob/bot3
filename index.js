@@ -102,8 +102,7 @@ function getRandomChannelId() {
 client.on('ready', async () => {
   console.log(`✅ เข้าระบบในชื่อ ${client.user.tag}`);
 
-  // ส่งข้อความสุ่มทุก 2 นาที
-  setInterval(async () => {
+  async function sendRandomMessage() {
     const targetChannelId = getRandomChannelId();
 
     try {
@@ -125,7 +124,11 @@ client.on('ready', async () => {
     } catch (error) {
       console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
     }
-  }, 60000);
+
+    const delay = Math.floor(Math.random() * (90000 - 50000 + 1)) + 50000;
+    setTimeout(sendRandomMessage, delay);
+  }
+  sendRandomMessage();
 });
 
 client.on('messageCreate', async (message) => {
