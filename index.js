@@ -103,40 +103,39 @@ client.on('ready', async () => {
   console.log(`✅ เข้าระบบในชื่อ ${client.user.tag}`);
 
   async function sendRandomMessage() {
-    const targetChannelId = getRandomChannelId();
+  const targetChannelId = getRandomChannelId();
 
-    try {
-      const channel = await client.channels.fetch(targetChannelId);
-      const logChannel = await client.channels.fetch(logChannelId);
+  try {
+    const channel = await client.channels.fetch(targetChannelId);
+    const logChannel = await client.channels.fetch(logChannelId);
 
-      if (!channel) {
-        console.log(`❌ ไม่พบช่อง ${targetChannelId}`);
-        return;
-      }
-
-      // ดึงข้อความล่าสุดในช่องนั้น (limit=1)
-      const messages = await channel.messages.fetch({ limit: 1 });
-      const lastMessage = messages.first();
-
-      // ถ้ามีข้อความล่าสุด และข้อความนั้นเป็นของบอทเอง ให้ข้ามไม่ส่ง
-      if (lastMessage && lastMessage.author.id === client.user.id) {
-        console.log(`⚠️ ข้อความล่าสุดในช่อง ${targetChannelId} เป็นของบอทเอง, ข้ามการส่งข้อความซ้ำ`);
-      } else {
-        const messageToSend = getRandomMentionMessage();
-        await channel.send(messageToSend);
-        console.log(`✅ ส่งข้อความไปยังห้อง ${targetChannelId} เรียบร้อย`);
-
-        if (logChannel) {
-          await logChannel.send(`[ LOG ] ได้ส่งข้อความลงไปยังห้อง <#${targetChannelId}>`);
-        }
-      }
-    } catch (error) {
-      console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
+    if (!channel) {
+      console.log(`❌ ไม่พบช่อง ${targetChannelId}`);
+      return;
     }
 
-    const delay = Math.floor(Math.random() * (90000 - 50000 + 1)) + 50000;
-    setTimeout(sendRandomMessage, delay);
+    // ดึง 4 ข้อความล่าสุด
+    const messages = await channel.messages.fetch({ limit: 4 });
+    const hasRecentBotMessage = messages.some(msg => msg.author.id === client.user.id);
+
+    if (hasRecentBotMessage) {
+      console.log(`⚠️ มีข้อความของบอทภายใน 4 ข้อความล่าสุดในห้อง ${targetChannelId} ข้ามการส่ง`);
+    } else {
+      const messageToSend = getRandomMentionMessage();
+      await channel.send(messageToSend);
+      console.log(`✅ ส่งข้อความไปยังห้อง ${targetChannelId} เรียบร้อย`);
+
+      if (logChannel) {
+        await logChannel.send(`[ LOG ] ได้ส่งข้อความลงไปยังห้อง <#${targetChannelId}>`);
+      }
+    }
+  } catch (error) {
+    console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
   }
+
+  const delay = Math.floor(Math.random() * (90000 - 50000 + 1)) + 50000;
+  setTimeout(sendRandomMessage, delay);
+}
   sendRandomMessage();
 });
 
