@@ -2,6 +2,7 @@ const { Client } = require('discord.js-selfbot-v13');
 
 const client = new Client();
 require("./server");
+
 // ห้องเป้าหมายพร้อมน้ำหนักความน่าจะเป็น
 const weightedChannelIds = [
   { id: '1080187563073081454', weight: 40 },
@@ -78,7 +79,6 @@ const mentionMessages = [
   '<@&1082277102830764152> ขอ ญ จริงใจ ไม่เล่นๆ',
 ];
 
-
 // ฟังก์ชันสุ่มข้อความ
 function getRandomMentionMessage() {
   const index = Math.floor(Math.random() * mentionMessages.length);
@@ -114,12 +114,21 @@ client.on('ready', async () => {
         return;
       }
 
-      const messageToSend = getRandomMentionMessage();
-      await channel.send(messageToSend);
-      console.log(`✅ ส่งข้อความไปยังห้อง ${targetChannelId} เรียบร้อย`);
+      // ดึงข้อความล่าสุดในช่องนั้น (limit=1)
+      const messages = await channel.messages.fetch({ limit: 1 });
+      const lastMessage = messages.first();
 
-      if (logChannel) {
-        await logChannel.send(`[ LOG ] ได้ส่งข้อความลงไปยังห้อง <#${targetChannelId}>`);
+      // ถ้ามีข้อความล่าสุด และข้อความนั้นเป็นของบอทเอง ให้ข้ามไม่ส่ง
+      if (lastMessage && lastMessage.author.id === client.user.id) {
+        console.log(`⚠️ ข้อความล่าสุดในช่อง ${targetChannelId} เป็นของบอทเอง, ข้ามการส่งข้อความซ้ำ`);
+      } else {
+        const messageToSend = getRandomMentionMessage();
+        await channel.send(messageToSend);
+        console.log(`✅ ส่งข้อความไปยังห้อง ${targetChannelId} เรียบร้อย`);
+
+        if (logChannel) {
+          await logChannel.send(`[ LOG ] ได้ส่งข้อความลงไปยังห้อง <#${targetChannelId}>`);
+        }
       }
     } catch (error) {
       console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
