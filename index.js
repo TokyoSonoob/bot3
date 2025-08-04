@@ -141,8 +141,20 @@ client.on('ready', async () => {
 });
 
 client.on('messageCreate', async (message) => {
-  if (!weightedChannelIds.some(ch => ch.id === message.channel.id)) return;
   if (message.author.id === client.user.id) return;
+
+  // เช็คคำสั่ง !test จาก user ID ที่กำหนด
+  if (message.author.id === '849964668177088562' && message.content.trim() === '!test') {
+    try {
+      await message.channel.send('บอทกำลังทำงานอยู่ครับ');
+      console.log(`✅ ตอบคำสั่ง !test ให้กับผู้ใช้ ${message.author.tag}`);
+    } catch (error) {
+      console.error('❌ ไม่สามารถตอบคำสั่ง !test:', error);
+    }
+    return; // ไม่ต้องทำงานส่วนอื่นต่อ
+  }
+
+  if (!weightedChannelIds.some(ch => ch.id === message.channel.id)) return;
 
   const content = message.content.toLowerCase();
   if (keywords.some(word => content.includes(word))) {
