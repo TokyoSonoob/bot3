@@ -513,7 +513,7 @@ client.on('ready', async () => {
       console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
     }
 
-    const delay = Math.floor(Math.random() * (90000 - 50000 + 1)) + 50000;
+    const delay = Math.floor(Math.random() * (180000 - 100000 + 1)) + 100000;
     setTimeout(sendRandomMessage, delay);
   }
   sendRandomMessage();
