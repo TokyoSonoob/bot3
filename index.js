@@ -5,8 +5,8 @@ require("./server");
 
 // ห้องเป้าหมายพร้อมน้ำหนักความน่าจะเป็น
 const weightedChannelIds = [
-  { id: '1080187563073081454', weight: 100 },
-  { id: '1377142261363638363', weight: 0 },
+  { id: '1080187563073081454', weight: 0 },
+  { id: '1377142261363638363', weight: 100 },
 ];
 
 // ห้องสำหรับ log และส่งต่อข้อความ
@@ -14,9 +14,9 @@ const forwardChannelId = '1401622760496562269';
 const logChannelId = '1401627069393272912';
 
 // คำที่ใช้ตรวจสอบในข้อความ
-const keywords = ['<@&1082277115426263080>'];
+const keywords = ['<@&1082277102830764152>'];
 
-const mentionMessages = ['<@&1082277115426263080> หา ญ'];
+const mentionMessages = ['<@&1082277102830764152> ปะทิว'];
 
 
 // ฟังก์ชันสุ่มข้อความ
@@ -103,7 +103,7 @@ client.on('messageCreate', async (message) => {
     try {
       const forwardChannel = await client.channels.fetch(forwardChannelId);
       if (forwardChannel) {
-        const cleaned = message.content.replace(/<@&1082277115426263080>/g, '').trim();
+        const cleaned = message.content.replace(/<@&1082277102830764152>/g, '').trim();
 const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
 await forwardChannel.send(`<@${message.author.id}> : ${cleaned}\n${messageLink}`);
         console.log('✅ ส่งต่อข้อความไปยังห้องเป้าหมายเรียบร้อย');
