@@ -5,8 +5,8 @@ require("./server");
 
 // ห้องเป้าหมายพร้อมน้ำหนักความน่าจะเป็น
 const weightedChannelIds = [
-  { id: '1080187563073081454', weight: 0 },
-  { id: '1377142261363638363', weight: 100 },
+  { id: '1080187563073081454', weight: 100 },
+  { id: '1377142261363638363', weight: 0 },
 ];
 
 // ห้องสำหรับ log และส่งต่อข้อความ
@@ -74,7 +74,11 @@ client.on('ready', async () => {
       console.error(`❌ ส่งข้อความล้มเหลวที่ห้อง ${targetChannelId}:`, error);
     }
 
-    const delay = Math.floor(Math.random() * (180000 - 100000 + 1)) + 100000;
+    const randMinutes = (minM, maxM) =>
+  Math.floor(Math.random() * ((maxM - minM) * 60_000 + 1)) + minM * 60_000;
+
+const delay = randMinutes(5, 10); // ms
+
     setTimeout(sendRandomMessage, delay);
   }
   sendRandomMessage();
