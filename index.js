@@ -38,6 +38,8 @@ const config = {
 };
 require('./money')(client, config); 
 require('./find')(client, config); 
+require('./word')(client, config);
+require('./friend')(client, config);
 
 const token = process.env.BOT_TOKEN;
 if (!token) {
