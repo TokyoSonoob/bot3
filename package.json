@@ -1,22 +1,16 @@
 {
-  "name": "my-discord-bot",
+  "name": "discord-angpao-claimer",
   "version": "1.0.0",
+  "description": "TrueMoney Angpao claimer selfbot.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "axios": "^1.6.7",
-    "discord.js": "^14.20.0",
-    "express": "^4.18.2",
-    "firebase-admin": "^11.11.1",
-    "node-fetch": "^2.7.0",
-    "openai": "^5.10.2",
-    "discord.js-selfbot-v13": "^3.7.0"
+    "@opecgame/twapi": "^1.2.1",
+    "axios": "^0.27.2",
+    "discord.js-selfbot-v13": "^3.7.1",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2"
   }
 }
