@@ -1,4 +1,3 @@
-// === CONFIGURATION (เฉพาะส่วนที่เกี่ยวข้องกับการจองเวลา) ===
 const TARGET_GUILD_ID = '1301751195731230782';
 const TARGET_ANNOUNCE_CHANNEL_ID = '1420428525395120178'; 
 const MESSAGE_CONTENT = 'จองฮ้าฟฟฟฟ';
@@ -8,9 +7,18 @@ const TARGET_MILLISECOND_C2 = TARGET_MILLISECOND_C1 - 100;
 const TIME_REGEX = /พิมพ์ตอน\s*(\d{1,2}:\d{2})/i;
 const MESSAGE_FETCH_LIMIT = 20;
 
-// === HELPER FUNCTIONS ===
+const getThaiTime = () => {
+    const now = new Date();
+    const serverOffset = now.getTimezoneOffset(); 
+    const thaiOffset = -420; 
+    const offsetDifference = serverOffset - thaiOffset; 
+    
+    const thaiTime = new Date(now.getTime() + offsetDifference * 60000); 
+    return thaiTime;
+};
+
 const scheduleExecution = (client, clientName, hour, minute, targetMS, threadId) => {
-    const now = new Date();
+    const now = new Date(); 
     const target = new Date(now);
     target.setHours(hour, minute, 0, targetMS);
     
@@ -51,19 +59,17 @@ const scheduleExecution = (client, clientName, hour, minute, targetMS, threadId)
     return timerId;
 };
 
-// === MAIN CHECKER LOGIC ===
 async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers) {
-    console.log(`\n--- เริ่มต้นการตรวจสอบกิจกรรมและรีเซ็ต Timer (Source: ${sourceEvent}) ---`);
+    const thaiNow = getThaiTime(); 
+    console.log(`\n--- เริ่มต้นการตรวจสอบกิจกรรมและรีเซ็ต Timer (Source: ${sourceEvent}, เวลาไทย: ${thaiNow.toLocaleTimeString()}) ---`);
     
-    // *** การแก้ไขปัญหา TypeError: เพิ่มการตรวจสอบ Array ***
-    if (Array.isArray(todayTimers)) {
-        todayTimers.forEach(clearTimeout);
-        todayTimers.length = 0; // รีเซ็ต Array
-    } else {
-        console.error("[ERROR] todayTimers ไม่ใช่ Array! ไม่สามารถเคลียร์ Timer ได้");
-        return; 
-    }
-    // ******************************************************
+    if (Array.isArray(todayTimers)) {
+        todayTimers.forEach(clearTimeout);
+        todayTimers.length = 0; 
+    } else {
+        console.error("[ERROR] todayTimers ไม่ใช่ Array! ไม่สามารถเคลียร์ Timer ได้");
+        return; 
+    }
 
     const guild = client1.guilds.cache.get(TARGET_GUILD_ID);
     if (!guild) {
@@ -75,10 +81,8 @@ async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers)
     
     let channelsToScan = [];
     if (parentChannel && parentChannel.messages) {
-        // Case 1: Standard Text Channel
         channelsToScan.push(parentChannel);
     } else if (parentChannel && parentChannel.threads) {
-        // Case 2: Forum/Container Channel - สแกนทุก Thread ที่ใช้งานอยู่
         try {
             const fetchedThreads = await parentChannel.threads.fetch({ limit: 50 });
             channelsToScan = Array.from(fetchedThreads.threads.values());
@@ -97,12 +101,10 @@ async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers)
         return;
     }
     
-    const now = new Date();
-    const todayDateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
+    const todayDateStr = thaiNow.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
 
     const validTodayTargets = [];
 
-    // --- Start Iteration Over Channels/Threads ---
     for (const channel of channelsToScan) {
         if (!channel.messages) continue; 
         
@@ -111,7 +113,8 @@ async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers)
 
             messages.forEach(message => {
                 const messageDate = message.createdAt;
-                const messageDateStr = messageDate.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
+                const messageDateAsThai = new Date(messageDate.getTime() + (7 * 60 * 60000));
+                const messageDateStr = messageDateAsThai.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
 
                 if (messageDateStr !== todayDateStr) return;
 
@@ -122,10 +125,10 @@ async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers)
                 const [hour, minute] = timeString.split(':').map(Number);
                 
                 if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                    const announceTime = new Date(now);
+                    const announceTime = new Date(thaiNow);
                     announceTime.setHours(hour, minute, 0, 0);
 
-                    if (announceTime.getTime() > now.getTime()) {
+                    if (announceTime.getTime() > thaiNow.getTime()) {
                         validTodayTargets.push({ 
                             hour, 
                             minute, 
@@ -140,7 +143,6 @@ async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers)
             console.error(`[Error - Fetch] ❌ ข้อผิดพลาดในการดึงข้อความจาก Channel/Thread ${channel.id}:`, e.message);
         }
     }
-    // --- End Iteration ---
     
     if (validTodayTargets.length > 0) {
         console.log(`[Info - Check] 🔔 พบ ${validTodayTargets.length} เวลาประกาศที่ยังไม่ถึงวันนี้ กำลังตั้ง Timer...`);
@@ -158,23 +160,17 @@ async function checkAndSetLatestTime(client1, client2, sourceEvent, todayTimers)
     }
 }
 
-
-// === EXPORT MODULE (Event Listeners) ===
 module.exports = (client1, client2, todayTimers) => {
     
-    // เริ่มการตรวจสอบครั้งแรกหลังจาก ready event ใน index.js
     setTimeout(() => {
-        // ตรวจสอบว่า client2 พร้อมหรือไม่ ก่อนที่จะรัน Logic
         if (client2.user) {
             checkAndSetLatestTime(client1, client2, 'Initial Run', todayTimers);
         } else {
-            console.log("[Info] Client 2 ยังไม่พร้อม, ข้ามการตรวจสอบครั้งแรก");
-        }
+            console.log("[Info] Client 2 ยังไม่พร้อม, ข้ามการตรวจสอบครั้งแรก");
+        }
     }, 1000); 
 
-    // 1. ตรวจสอบเมื่อมีข้อความใหม่ (ใน Channel หลัก หรือ Thread)
     client1.on('messageCreate', (message) => {
-        // ต้องแน่ใจว่าทั้งสอง client พร้อม
         if (!client2.user || message.author.id === client1.user.id || message.guildId !== TARGET_GUILD_ID) return;
         
         if (message.channelId === TARGET_ANNOUNCE_CHANNEL_ID || message.channel.parentId === TARGET_ANNOUNCE_CHANNEL_ID) {
@@ -182,7 +178,6 @@ module.exports = (client1, client2, todayTimers) => {
         }
     });
 
-    // 2. ตรวจสอบเมื่อมีการแก้ไขข้อความ (ใน Channel หลัก หรือ Thread)
     client1.on('messageUpdate', (oldMessage, newMessage) => {
         if (!client2.user || newMessage.author.id === client1.user.id || newMessage.guildId !== TARGET_GUILD_ID) return;
 
@@ -191,14 +186,12 @@ module.exports = (client1, client2, todayTimers) => {
         }
     });
 
-    // 3. ตรวจสอบเมื่อมีการสร้าง Thread ใหม่ (Post ใหม่ใน Forum)
     client1.on('threadCreate', (thread) => {
         if (!client2.user || thread.guildId !== TARGET_GUILD_ID || thread.parentId !== TARGET_ANNOUNCE_CHANNEL_ID) return;
         
         checkAndSetLatestTime(client1, client2, 'threadCreate', todayTimers);
     });
 
-    // 4. ตรวจสอบเมื่อมีการแก้ไข/ปิด Thread (รวมถึงการแก้ไขชื่อ Thread ที่อาจมีเวลาอยู่)
     client1.on('threadUpdate', (oldThread, newThread) => {
         if (!client2.user || newThread.guildId !== TARGET_GUILD_ID || newThread.parentId !== TARGET_ANNOUNCE_CHANNEL_ID) return;
 
