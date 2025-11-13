@@ -57,12 +57,9 @@ client1.on('ready', async () => {
     };
 
     // ส่ง client1, client2 และ config เข้าไปใน Module ต่างๆ
-    require('./money')(client1, config); // ส่ง client2 ไปด้วย
-    require('./find')(client1, config); 
+    require('./money')(client1, config);
+    require('./find')(client1, config);
     require('./word')(client1, config);
-    require('./friend')(client1, config);
-    
-    require('./test')(client1, client2, todayTimers); 
 });
 
 // === LOGIN CLIENT 1 ===
@@ -75,3 +72,4 @@ client1.login(token1).catch(err => {
   console.error('❌ Client 1 Login failed:', err);
   process.exit(1);
 });
+
