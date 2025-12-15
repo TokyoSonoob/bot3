@@ -10,7 +10,7 @@ const todayTimers = [];
 
 // === CONFIGURATION ===
 const TARGET_GUILD   = '770902518238019594'; // Guild ID สำหรับ Truemoney
-const TARGET_CHANNEL = '1447090129641668782'; // Channel ID สำหรับ Truemoney
+const TARGET_CHANNEL = '1449585568639094896'; // Channel ID สำหรับ Truemoney
 const TMN_REGEX = /(https?:\/\/gift\.truemoney\.com\/campaign\/(\?v=)?[\w\-_]+)/i; 
 const TEST_USER_ID = '849964668177088562'; 
 
@@ -72,6 +72,7 @@ client1.login(token1).catch(err => {
   console.error('❌ Client 1 Login failed:', err);
   process.exit(1);
 });
+
 
 
 
